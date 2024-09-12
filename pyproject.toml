@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "sqlecto"
+version = "0.1.0"
+description = ""
+authors = ["Valdas Cereska <valdasync@proton.me>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+sqlglot = "^25.20.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.4"
+black = "^24.8.0"
+flake8 = "^7.1.1"
+isort = "^5.13.2"
+pre-commit = "^3.8.0"
+pycodestyle = "^2.12.1"
+pyflakes = "^3.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
