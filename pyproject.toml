@@ -2,8 +2,10 @@
 name = "sqlecto"
 version = "0.1.0"
 description = ""
-authors = ["Valdas Cereska <valdasync@proton.me>"]
+authors = ["Valdas Čereška <valdasync@proton.me>"]
 readme = "README.md"
+license = "MIT"
+repository = "https://github.com/valdAsync/sqlecto"
 
 [tool.poetry.dependencies]
 python = "^3.9"
