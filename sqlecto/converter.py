@@ -43,10 +43,14 @@ def extract_spark_queries(code: str) -> list[str]:
     """
     pattern = re.compile(r'spark\.sql\(\s*f?[\'"]{3}.*?[\'"]{3}\s*\)', re.DOTALL)
     matches = pattern.findall(code)
-    queries = [
-        re.search(r'[\'"]{3}.*?[\'"]{3}', match, re.DOTALL).group(0)[3:-3].strip()
-        for match in matches
-    ]
+    queries = []
+
+    for match in matches:
+        m = re.search(r'[\'"]{3}.*?[\'"]{3}', match, re.DOTALL)
+        if m:
+            queries.append(m.group(0)[3:-3].strip())
+        else:
+            logger.warning(f"Could not extract SQL query from: {match}")
     return queries
 
 
