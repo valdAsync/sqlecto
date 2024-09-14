@@ -6,7 +6,6 @@ import re
 
 import sqlglot
 
-from sqlecto.utils import load_config
 from sqlecto.utils import read_file
 
 
@@ -110,7 +109,11 @@ def transpile_sql_queries(queries: list[str], src_dialect: str, dst_dialect) -> 
 
 
 def process_file(
-    file_path: str, src_dialect: str, tgt_dialect: str, table_mappings: list[dict]
+    file_path: str,
+    src_dialect: str,
+    tgt_dialect: str,
+    table_mappings: list[dict],
+    output_dir: str = "transpiled_queries",
 ) -> None:
     """
     Process a file containing code and extract and transpile SQL queries.
@@ -141,7 +144,6 @@ def process_file(
 
     transpiled_queries = transpile_sql_queries(queries, src_dialect, tgt_dialect)
 
-    output_dir = "transpiled_queries"
     os.makedirs(output_dir, exist_ok=True)
 
     base_name = os.path.basename(file_path)
@@ -154,13 +156,4 @@ def process_file(
             output_file.write(query + ";\n\n")
             output_file.write("\n" + "-" * 80 + "\n\n")
 
-
-config_path = "config.json"
-config = load_config(config_path)
-
-file_path = config["source_file"]
-src_dialect = config["source_dialect"]
-tgt_dialect = config["target_dialect"]
-table_mappings = config["table_mappings"]
-
-process_file(file_path, src_dialect, tgt_dialect, table_mappings)
+    logger.info(f"Transpiled queries saved to: {output_file_path}")
