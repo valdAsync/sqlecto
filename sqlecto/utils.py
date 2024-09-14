@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import os
 
-import sqlglot
 import yaml
 
 from sqlglot import Dialect
