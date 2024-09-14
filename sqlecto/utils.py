@@ -6,6 +6,8 @@ import os
 import sqlglot
 import yaml
 
+from sqlglot import Dialect
+
 
 def read_file(file_path: str) -> str:
     """
@@ -53,4 +55,4 @@ def validate_dialect(dialect_name: str) -> bool:
     Returns:
         bool: True if the dialect is supported, False otherwise.
     """
-    return dialect_name.lower() in sqlglot.dialects.DIALECTS
+    return Dialect.get(dialect_name.lower()) is not None
