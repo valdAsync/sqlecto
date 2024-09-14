@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-import json
+import logging
 import os
 import re
 
 import sqlglot
-import yaml
 
 from sqlecto.utils import load_config
 from sqlecto.utils import read_file
+
+
+logger = logging.getLogger(__name__)
 
 
 def filter_create_table_queries(queries: list[str]) -> list[str]:
@@ -74,13 +76,13 @@ def replace_table_names(queries: list[str], mappings: list[dict]) -> list[str]:
         list[str]: A list of SQL queries with replaced table names.
     """
     for mapping in mappings:
-        cdl_table = mapping["cdl_table"]
-        bdh_table = mapping["bdh_table"]
-        queries = [query.replace(cdl_table, bdh_table) for query in queries]
+        src_table = mapping["src_table"]
+        dst_table = mapping["dst_table"]
+        queries = [query.replace(src_table, dst_table) for query in queries]
     return queries
 
 
-def transpile_sql_queries(queries: list[str], src_dialect: str) -> list:
+def transpile_sql_queries(queries: list[str], src_dialect: str, dst_dialect) -> list:
     """
     Transpiles a list of SQL queries from Spark to Snowflake syntax.
 
@@ -92,20 +94,27 @@ def transpile_sql_queries(queries: list[str], src_dialect: str) -> list:
     """
     transpiled_queries = []
     for query in queries:
-        transpiled_query = sqlglot.transpile(
-            query, read=f"{src_dialect}", write="snowflake", pretty=True
-        )[0]
-        transpiled_queries.append(transpiled_query)
+        try:
+            transpiled_query = sqlglot.transpile(
+                query, read=f"{src_dialect}", write=dst_dialect, pretty=True
+            )[0]
+            transpiled_queries.append(transpiled_query)
+        except Exception as e:
+            logger.error(f"Error transpiling query: {query}\nError: {e}")
+            transpiled_queries.append(f"-- Error transpiling query:\n-- {e}\n{query}")
     return transpiled_queries
 
 
-def process_file(file_path: str, src_dialect: str, table_mappings: list[dict]) -> None:
+def process_file(
+    file_path: str, src_dialect: str, tgt_dialect: str, table_mappings: list[dict]
+) -> None:
     """
     Process a file containing code and extract and transpile SQL queries.
 
     Args:
         file_path (str): The path to the file.
         src_dialect (str): The source SQL dialect.
+        tgt_dialect (str): The target SQL dialect.
         table_mappings (list[dict]): A list of table name mappings.
 
     Returns:
@@ -126,9 +135,9 @@ def process_file(file_path: str, src_dialect: str, table_mappings: list[dict]) -
 
     queries = replace_table_names(queries, table_mappings)
 
-    transpiled_queries = transpile_sql_queries(queries, src_dialect)
+    transpiled_queries = transpile_sql_queries(queries, src_dialect, tgt_dialect)
 
-    output_dir = "converted_scripts"
+    output_dir = "transpiled_queries"
     os.makedirs(output_dir, exist_ok=True)
 
     base_name = os.path.basename(file_path)
@@ -147,5 +156,7 @@ config = load_config(config_path)
 
 file_path = config["source_file"]
 src_dialect = config["source_dialect"]
+tgt_dialect = config["target_dialect"]
 table_mappings = config["table_mappings"]
-process_file(file_path, src_dialect, table_mappings)
+
+process_file(file_path, src_dialect, tgt_dialect, table_mappings)
