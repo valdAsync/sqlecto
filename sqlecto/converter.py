@@ -112,7 +112,7 @@ def process_file(
     file_path: str,
     src_dialect: str,
     tgt_dialect: str,
-    table_mappings: list[dict],
+    table_mappings: list[dict[str, str]],
     output_dir: str = "transpiled_queries",
 ) -> None:
     """
