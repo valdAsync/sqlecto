@@ -13,17 +13,18 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    config_path = "config.json"
+    config_path = "config.yaml"
     config = load_config(config_path)
 
-    source_file = config.get("source_file")
+    source_files = config.get("source_files", [])
+    source_files = source_files if isinstance(source_files, list) else [source_files]
     source_dir = config.get("source_dir")
-    src_dialect = config["source_dialect"]
-    tgt_dialect = config["target_dialect"]
-    table_mappings = config["table_mappings"]
+    src_dialect = config.get("source_dialect")
+    tgt_dialect = config.get("target_dialect")
+    table_mappings = config.get("table_mappings")
 
     # If neither source_file nor source_dir is provided, default to current directory
-    if not source_file and not source_dir:
+    if not source_files and not source_dir:
         source_dir = "."
         logger.info(
             "No source file or directory specified. Defaulting to current directory."
@@ -36,10 +37,11 @@ def main():
     if not validate_dialect(tgt_dialect):
         raise ValueError(f"Unsupported target dialect: {tgt_dialect}")
 
+    # Build a list of files to process
     files_to_process = []
 
-    if source_file:
-        files_to_process.append(source_file)
+    if source_files:
+        files_to_process.extend(source_files)
 
     if source_dir:
         for root, _, files in os.walk(source_dir):
