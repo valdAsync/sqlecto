@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import os
 
+import click
+
 from converter import process_file
 from utils import load_config
 from utils import validate_dialect
@@ -12,22 +14,96 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def main():
-    config_path = "config.yaml"
-    config = load_config(config_path)
+@click.command()
+@click.option(
+    "--source-files",
+    "source_files",
+    multiple=True,
+    type=click.Path(exists=True, dir_okay=False),
+    help="Path to the SQL or Python file(s) to process.",
+)
+@click.option(
+    "--source-dir",
+    default=".",
+    type=click.Path(exists=True, file_okay=False),
+    help="Path to the directory containing SQL or Python files to process.",
+)
+@click.option(
+    "--source-dialect",
+    type=click.Choice(["spark", "hive"]),
+    help="Source SQL dialect.",
+)
+@click.option(
+    "--target-dialect",
+    type=click.Choice(["spark", "hive"]),
+    help="Target SQL dialect.",
+)
+@click.option(
+    "--table-mappings",
+    multiple=True,
+    help="Table name mappings in the format: source_table:target_table.",
+)
+@click.option(
+    "--table-mappings-file",
+    type=click.Path(exists=True, dir_okay=False),
+    help="Path to a file containing table mappings (JSON or YAML).",
+)
+@click.option(
+    "--config-file",
+    type=click.Path(exists=True, dir_okay=False),
+    help="Path to the configuration file (JSON or YAML).",
+)
+@click.option(
+    "--output-dir",
+    default="transpiled_queries",
+    type=click.Path(file_okay=False),
+    show_default=True,
+    help="Directory to save the transpiled queries.",
+)
+def main(
+    source_files,
+    source_dir,
+    src_dialect,
+    tgt_dialect,
+    table_mappings,
+    table_mappings_file,
+    config_file,
+    output_dir,
+):
+    if config_file:
+        config = load_config(config_file)
 
-    source_files = config.get("source_files", [])
-    source_files = source_files if isinstance(source_files, list) else [source_files]
-    source_dir = config.get("source_dir")
-    src_dialect = config.get("source_dialect")
-    tgt_dialect = config.get("target_dialect")
-    table_mappings = config.get("table_mappings")
+        source_files = config.get("source_files", [])
+        source_files = (
+            source_files if isinstance(source_files, list) else [source_files]
+        )
+
+        source_dir = source_dir or config.get("source_dir")
+        src_dialect = src_dialect or config.get("source_dialect")
+        tgt_dialect = tgt_dialect or config.get("target_dialect")
+        output_dir = output_dir or config.get("output_dir")
+        if "table_mappings" in config:
+            table_mappings = list(table_mappings)
+            table_mappings.extend(
+                [
+                    f"{mapping['cdl_table']}:{mapping['bdh_table']}"
+                    for mapping in config["table_mappings"]
+                ]
+            )
+    else:
+        config = {}
 
     if not source_files and not source_dir:
         source_dir = "."
         logger.info(
             "No source file or directory specified. Defaulting to current directory."
         )
+
+    if not src_dialect:
+        raise click.UsageError("Missing required parameter: --source-dialect")
+
+    if not tgt_dialect:
+        raise click.UsageError("Missing required parameter: --target-dialect")
 
     if not validate_dialect(src_dialect):
         raise ValueError(f"Unsupported source dialect: {src_dialect}")
@@ -47,7 +123,7 @@ def main():
                     files_to_process.append(os.path.join(root, file))
 
     if not files_to_process:
-        raise ValueError("No files found to process.")
+        raise click.UsageError("No files found to process.")
 
     for file_path in files_to_process:
         logger.info(f"Processing file: {file_path}")
