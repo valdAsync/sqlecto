@@ -23,21 +23,18 @@ def main():
     tgt_dialect = config.get("target_dialect")
     table_mappings = config.get("table_mappings")
 
-    # If neither source_file nor source_dir is provided, default to current directory
     if not source_files and not source_dir:
         source_dir = "."
         logger.info(
             "No source file or directory specified. Defaulting to current directory."
         )
 
-    # Validate dialects
     if not validate_dialect(src_dialect):
         raise ValueError(f"Unsupported source dialect: {src_dialect}")
 
     if not validate_dialect(tgt_dialect):
         raise ValueError(f"Unsupported target dialect: {tgt_dialect}")
 
-    # Build a list of files to process
     files_to_process = []
 
     if source_files:
