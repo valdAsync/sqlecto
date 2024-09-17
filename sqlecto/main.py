@@ -63,8 +63,8 @@ logger = logging.getLogger(__name__)
 def main(
     source_files,
     source_dir,
-    src_dialect,
-    tgt_dialect,
+    source_dialect,
+    target_dialect,
     table_mappings,
     table_mappings_file,
     config_file,
@@ -79,8 +79,8 @@ def main(
         )
 
         source_dir = source_dir or config.get("source_dir")
-        src_dialect = src_dialect or config.get("source_dialect")
-        tgt_dialect = tgt_dialect or config.get("target_dialect")
+        source_dialect = source_dialect or config.get("source_dialect")
+        target_dialect = target_dialect or config.get("target_dialect")
         output_dir = output_dir or config.get("output_dir")
         if "table_mappings" in config:
             table_mappings = list(table_mappings)
@@ -99,17 +99,17 @@ def main(
             "No source file or directory specified. Defaulting to current directory."
         )
 
-    if not src_dialect:
+    if not source_dialect:
         raise click.UsageError("Missing required parameter: --source-dialect")
 
-    if not tgt_dialect:
+    if not target_dialect:
         raise click.UsageError("Missing required parameter: --target-dialect")
 
-    if not validate_dialect(src_dialect):
-        raise ValueError(f"Unsupported source dialect: {src_dialect}")
+    if not validate_dialect(source_dialect):
+        raise ValueError(f"Unsupported source dialect: {source_dialect}")
 
-    if not validate_dialect(tgt_dialect):
-        raise ValueError(f"Unsupported target dialect: {tgt_dialect}")
+    if not validate_dialect(target_dialect):
+        raise ValueError(f"Unsupported target dialect: {target_dialect}")
 
     files_to_process = []
 
@@ -128,7 +128,7 @@ def main(
     for file_path in files_to_process:
         logger.info(f"Processing file: {file_path}")
         try:
-            process_file(file_path, src_dialect, tgt_dialect, table_mappings)
+            process_file(file_path, source_dialect, target_dialect, table_mappings)
         except Exception as e:
             logger.error(f"Error processing file: {file_path}\nError: {e}")
 
