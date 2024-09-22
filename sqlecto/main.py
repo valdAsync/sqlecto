@@ -83,15 +83,15 @@ def main(
         target_dialect = target_dialect or config.get("target_dialect")
         output_dir = output_dir or config.get("output_dir")
         if "table_mappings" in config:
-            table_mappings = list(table_mappings)
-            table_mappings.extend(
-                [
-                    f"{mapping['cdl_table']}:{mapping['bdh_table']}"
-                    for mapping in config["table_mappings"]
-                ]
-            )
+            table_mappings = config["table_mappings"]
     else:
         config = {}
+
+    if table_mappings and isinstance(table_mappings[0], str):
+        table_mappings = [
+            {"src_table": mapping.split(":")[0], "dst_table": mapping.split(":")[1]}
+            for mapping in table_mappings
+        ]
 
     if not source_files and not source_dir:
         source_dir = "."
