@@ -30,12 +30,10 @@ logger = logging.getLogger(__name__)
 )
 @click.option(
     "--source-dialect",
-    type=click.Choice(["spark", "hive"]),
     help="Source SQL dialect.",
 )
 @click.option(
     "--target-dialect",
-    type=click.Choice(["spark", "hive"]),
     help="Target SQL dialect.",
 )
 @click.option(
