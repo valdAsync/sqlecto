@@ -87,13 +87,13 @@ def replace_table_names(queries: list[str], mappings: list[dict]) -> list[str]:
 
 def transpile_sql_queries(queries: list[str], src_dialect: str, dst_dialect) -> list:
     """
-    Transpiles a list of SQL queries from Spark to Snowflake syntax.
+    Transpiles a list of SQL queries from Spark.
 
     Args:
         queries (list[str]): A list of SQL queries to be transpiled.
         src_dialect (str): A dialect of SQL source query.
     Returns:
-        list: A list of transpiled SQL queries in Snowflake syntax.
+        list: A list of transpiled SQL queries.
     """
     transpiled_queries = []
     for query in queries:
@@ -125,7 +125,7 @@ def process_file(
         table_mappings (list[dict]): A list of table name mappings.
 
     Returns:
-        None
+        Output file paths.
     """
     content = read_file(file_path)
 
