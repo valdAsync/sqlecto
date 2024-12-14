@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sqlecto"
-version = "0.0.1"
+version = "0.1.0"
 description = ""
 authors = ["Valdas Čereška <valdasync@proton.me>"]
 readme = "README.md"
